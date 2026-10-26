@@ -1,0 +1,902 @@
+/* styles.css — the whole look of the app.
+ *
+ * Layout order:
+ *   1. Design tokens (colours, sizes) - change these to re-skin the app
+ *   2. Base / reset
+ *   3. Header and page layout
+ *   4. Shared pieces: quick-add box, list rows, buttons, empty states
+ *   5. Today tab
+ *   6. Shopping tab (including the swipe-to-delete animation)
+ *   7. Calendar tab and the event dialog
+ *   8. Bottom tabs, toast, and phone-specific tweaks
+ */
+
+/* ============ 1. Design tokens ============ */
+:root {
+  color-scheme: dark; /* makes date/time pickers and scrollbars dark too */
+
+  /* Palette */
+  --bg: #0e1116;
+  --surface: #171c24;
+  --surface-2: #1f2631;
+  --border: #2a323f;
+  --text: #eef2f7;
+  --muted: #93a1b3;
+  --accent: #2ee6c5;
+  --accent-ink: #06211d;
+  --danger: #ff7a7a;
+
+  /* Event tag colours */
+  --kids: #ffb454;
+  --work: #6aa8ff;
+  --home: #58d68d;
+  --projects: #c48cff;
+
+  /* Sizes */
+  --radius: 14px;
+  --tabbar-h: 62px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --page-width: 620px;
+}
+
+/* ============ 2. Base ============ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* The `hidden` attribute must always win, even over display:flex below. */
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, p {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ============ 3. Header and page layout ============ */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.app-header {
+  width: 100%;
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: calc(var(--safe-top) + 20px) 16px 6px;
+}
+
+.app-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.app-date {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--page-width);
+  margin: 0 auto;
+  /* leave room for the fixed bottom tab bar */
+  padding: 8px 16px calc(var(--tabbar-h) + var(--safe-bottom) + 28px);
+}
+
+/* Only the tab that has .is-active is shown */
+.panel {
+  display: none;
+}
+
+.panel.is-active {
+  display: block;
+}
+
+/* ============ 4. Shared pieces ============ */
+.quick-add {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  padding: 10px 0 12px;
+  background: var(--bg);
+}
+
+.quick-add-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 50px;
+  padding: 0 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 16px; /* 16px stops iOS zooming in when the box is focused */
+}
+
+.quick-add-input::placeholder {
+  color: var(--muted);
+}
+
+.quick-add-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.quick-add-btn {
+  flex: none;
+  width: 52px;
+  min-height: 50px;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+}
+
+.quick-add-btn:active {
+  transform: scale(0.96);
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+  margin: 4px 0 8px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.count {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 12px;
+  text-align: center;
+  letter-spacing: 0;
+}
+
+.text-btn {
+  min-height: 44px;
+  padding: 0 6px;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.text-btn:disabled {
+  color: var(--muted);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 12.5px;
+  margin: -4px 0 10px;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 15px;
+  padding: 26px 4px;
+  text-align: center;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* One list row. Used by tasks and shopping items. */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 58px;
+  padding: 8px 10px 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* The big tap area: tick circle + text. Tapping anywhere here toggles the item. */
+.row-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 44px;
+  text-align: left;
+}
+
+.row-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 16.5px;
+  overflow-wrap: anywhere;
+}
+
+.tick {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 2px solid #3d4756;
+  border-radius: 50%;
+  position: relative;
+}
+
+/* The little checkmark appears when the item is ticked */
+.tick::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 3px;
+  width: 8px;
+  height: 13px;
+  border: solid var(--accent-ink);
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform 0.12s ease;
+}
+
+.is-done .tick {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.is-done .tick::after {
+  transform: rotate(45deg) scale(1);
+}
+
+.is-done .row-text {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+
+/* Small pill button, e.g. "→ Tomorrow" */
+.pill-btn {
+  flex: none;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pill-btn:active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ============ 5. Today tab ============ */
+.rows-done .row {
+  background: transparent;
+  border-color: transparent;
+  padding-left: 2px;
+}
+
+.done-group {
+  margin-top: 26px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+/* ============ 6. Shopping tab ============ */
+/* Each item sits in a wrapper so the red "Delete" layer can hide behind it. */
+.swipe-row {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.swipe-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 22px;
+  background: var(--danger);
+  color: #2c0b0b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.swipe-front {
+  position: relative;      /* above .swipe-back */
+  background: var(--surface);
+  /* pan-y lets the page scroll vertically while we handle horizontal swipes */
+  touch-action: pan-y;
+  user-select: none;
+  transition: transform 0.18s ease;
+}
+
+.swipe-front.is-dragging {
+  transition: none; /* follow the finger exactly while dragging */
+}
+
+.row-delete {
+  flex: none;
+  width: 42px;
+  min-height: 42px;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.row-delete:active {
+  background: var(--surface-2);
+  color: var(--danger);
+}
+
+/* ============ 7. Calendar tab ============ */
+.week-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 6px 0 14px;
+}
+
+.icon-btn {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.icon-btn:active {
+  background: var(--surface-2);
+}
+
+.week-bar-centre {
+  flex: 1;
+  text-align: center;
+}
+
+.week-range {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.week-bar-centre .text-btn {
+  min-height: 32px;
+  font-size: 12.5px;
+}
+
+.week-strip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 16px;
+}
+
+.strip-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 64px;
+  padding: 6px 0;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.strip-day:active {
+  background: var(--surface-2);
+}
+
+.strip-name {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.strip-num {
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.strip-dots {
+  display: flex;
+  gap: 3px;
+  height: 5px;
+}
+
+.strip-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tag, var(--accent));
+}
+
+.strip-day.is-today {
+  border-color: var(--accent);
+}
+
+.strip-day.is-today .strip-num,
+.strip-day.is-today .strip-name {
+  color: var(--accent);
+}
+
+.add-event-btn {
+  width: 100%;
+  min-height: 48px;
+  margin-bottom: 6px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.add-event-btn:active {
+  background: var(--surface);
+}
+
+.week-day {
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+
+.week-day:first-child {
+  border-top: none;
+}
+
+.day-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.day-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.week-day.is-today .day-name {
+  color: var(--accent);
+}
+
+.day-badge {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.day-none {
+  color: var(--muted);
+  font-size: 13.5px;
+  padding: 4px 0 2px;
+  opacity: 0.75;
+}
+
+.event-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 46px;
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--tag, var(--accent));
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 15px;
+  text-align: left;
+}
+
+.event-chip:active {
+  background: var(--surface-2);
+}
+
+.event-time {
+  flex: none;
+  min-width: 56px;
+  color: var(--tag, var(--accent));
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.event-title {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Tag colours. Each class sets --tag, which the border and dot use. */
+.tag-kids { --tag: var(--kids); }
+.tag-work { --tag: var(--work); }
+.tag-home { --tag: var(--home); }
+.tag-projects { --tag: var(--projects); }
+
+/* ---- Event dialog ---- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.modal-card {
+  position: relative;
+  width: 100%;
+  max-width: var(--page-width);
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding: 18px 18px calc(18px + var(--safe-bottom));
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 22px 22px 0 0;
+  animation: sheet-up 0.2s ease;
+}
+
+/* Stop the page behind the dialog from scrolling while it is open */
+body.modal-open {
+  overflow: hidden;
+}
+
+.modal-title {
+  font-size: 19px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.field-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0;
+}
+
+.field-optional {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.field input {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.field-row .field {
+  margin-bottom: 0;
+}
+
+.tag-field {
+  border: none;
+  padding: 0;
+  margin: 0 0 20px;
+}
+
+.tag-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tag-chip::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tag, var(--accent));
+}
+
+.tag-chip[aria-pressed="true"] {
+  border-color: var(--tag, var(--accent));
+  color: var(--tag, var(--accent));
+  background: color-mix(in srgb, var(--tag, var(--accent)) 16%, transparent);
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.modal-spacer {
+  flex: 1;
+}
+
+.btn {
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn-ghost {
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.btn-danger {
+  border-color: rgba(255, 122, 122, 0.35);
+  color: var(--danger);
+}
+
+/* ============ 8. Bottom tabs + toast ============ */
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  padding-bottom: var(--safe-bottom);
+  background: rgba(14, 17, 22, 0.94);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+.tabbar-inner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  max-width: var(--page-width);
+  margin: 0 auto;
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: var(--tabbar-h);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.tab-icon {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tab.is-active {
+  color: var(--accent);
+}
+
+.tab:active {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 14px);
+  transform: translateX(-50%);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(calc(100% - 24px), 460px);
+  padding: 10px 10px 10px 16px;
+  background: #232b36;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  animation: toast-in 0.18s ease;
+}
+
+.toast-msg {
+  flex: 1;
+  font-size: 14.5px;
+}
+
+.toast-action {
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: var(--accent);
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+/* ---- Desktop and tablet ---- */
+@media (min-width: 640px) {
+  .app-header {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .app-main {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .modal {
+    align-items: center;
+    padding: 24px;
+  }
+
+  .modal-card {
+    border-bottom: 1px solid var(--border);
+    border-radius: 22px;
+    padding-bottom: 20px;
+  }
+}
+
+/* Respect people who turn off animations in their system settings */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes sheet-up {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes toast-in {
+  from { transform: translate(-50%, 8px); opacity: 0; }
+  to   { transform: translate(-50%, 0); opacity: 1; }
+}

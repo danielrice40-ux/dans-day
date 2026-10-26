@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport-fit=cover lets the app paint behind the notch on phones -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Dan's Day</title>
+  <meta name="description" content="A simple day planner for tasks, shopping and events. Works offline, stores everything on your device.">
+  <meta name="theme-color" content="#0e1116">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- ============ Header ============ -->
+    <header class="app-header">
+      <h1 class="app-title">Dan's Day</h1>
+      <p class="app-date" id="header-date"><!-- filled in by app.js --></p>
+    </header>
+
+    <main class="app-main">
+
+      <!-- ============ TAB 1: TODAY ============ -->
+      <section class="panel is-active" id="panel-today" data-panel="today" role="tabpanel" aria-labelledby="tab-today">
+
+        <!-- Quick add: type, press Enter (or tap +) to add a task -->
+        <form class="quick-add" id="task-form" autocomplete="off">
+          <input class="quick-add-input" id="task-input" type="text" maxlength="200"
+                 placeholder="Add a task…" aria-label="New task" enterkeyhint="done">
+          <button class="quick-add-btn" type="submit" aria-label="Add task">+</button>
+        </form>
+
+        <div class="section-head">
+          <h2 class="section-title">To do <span class="count" id="task-count">0</span></h2>
+        </div>
+
+        <ul class="rows" id="task-list"><!-- open tasks are rendered here --></ul>
+        <p class="empty" id="task-empty">Nothing on the list. Add your first task above.</p>
+
+        <!-- Done section: hidden until at least one task is ticked off -->
+        <section class="done-group" id="done-section" hidden>
+          <div class="section-head">
+            <h2 class="section-title">Done <span class="count" id="done-count">0</span></h2>
+          </div>
+          <ul class="rows rows-done" id="done-list"><!-- ticked tasks are rendered here --></ul>
+        </section>
+      </section>
+
+      <!-- ============ TAB 2: SHOPPING ============ -->
+      <section class="panel" id="panel-shopping" data-panel="shopping" role="tabpanel" aria-labelledby="tab-shopping">
+
+        <form class="quick-add" id="shop-form" autocomplete="off">
+          <input class="quick-add-input" id="shop-input" type="text" maxlength="120"
+                 placeholder="Add an item…" aria-label="New shopping item" enterkeyhint="done">
+          <button class="quick-add-btn" type="submit" aria-label="Add item">+</button>
+        </form>
+
+        <div class="section-head">
+          <h2 class="section-title">Shopping <span class="count" id="shop-count">0</span></h2>
+          <button class="text-btn" id="clear-ticked" type="button">Clear ticked</button>
+        </div>
+
+        <p class="hint" id="shop-hint">Tap to tick off · swipe left to delete</p>
+        <ul class="rows" id="shop-list"><!-- shopping items are rendered here --></ul>
+        <p class="empty" id="shop-empty">Your list is empty.</p>
+      </section>
+
+      <!-- ============ TAB 3: CALENDAR ============ -->
+      <section class="panel" id="panel-calendar" data-panel="calendar" role="tabpanel" aria-labelledby="tab-calendar">
+
+        <div class="week-bar">
+          <button class="icon-btn" id="prev-week" type="button" aria-label="Previous week">‹</button>
+          <div class="week-bar-centre">
+            <p class="week-range" id="week-range"><!-- e.g. 27 Oct – 2 Nov --></p>
+            <button class="text-btn" id="this-week" type="button">This week</button>
+          </div>
+          <button class="icon-btn" id="next-week" type="button" aria-label="Next week">›</button>
+        </div>
+
+        <!-- Mon-Sun strip. Tapping a day jumps to that day's events below. -->
+        <div class="week-strip" id="week-strip"><!-- 7 day buttons are rendered here --></div>
+
+        <button class="add-event-btn" id="add-event" type="button">+ Add event</button>
+
+        <div class="week-days" id="week-days"><!-- 7 day cards with events are rendered here --></div>
+      </section>
+    </main>
+
+    <!-- ============ Bottom tabs ============ -->
+    <nav class="tabbar" role="tablist" aria-label="Sections">
+      <div class="tabbar-inner">
+        <button class="tab is-active" id="tab-today" data-tab="today" type="button"
+                role="tab" aria-selected="true" aria-controls="panel-today">
+          <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h10M4 12h13M4 17h7"/>
+            <path d="M17.5 16.5l2 2 3.5-4"/>
+          </svg>
+          <span class="tab-label">Today</span>
+        </button>
+        <button class="tab" id="tab-shopping" data-tab="shopping" type="button"
+                role="tab" aria-selected="false" aria-controls="panel-shopping">
+          <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 5h2.5l2.2 9.4a1.5 1.5 0 001.5 1.1h8.2a1.5 1.5 0 001.5-1.1L21 8H6"/>
+            <circle cx="9.5" cy="19.5" r="1.4"/>
+            <circle cx="17.5" cy="19.5" r="1.4"/>
+          </svg>
+          <span class="tab-label">Shopping</span>
+        </button>
+        <button class="tab" id="tab-calendar" data-tab="calendar" type="button"
+                role="tab" aria-selected="false" aria-controls="panel-calendar">
+          <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3.5" y="5" width="17" height="15" rx="2.5"/>
+            <path d="M3.5 9.5h17M8 3.5v3M16 3.5v3"/>
+          </svg>
+          <span class="tab-label">Calendar</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- ============ Event dialog (add / edit) ============ -->
+  <div class="modal" id="event-modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
+      <h2 class="modal-title" id="event-modal-title">New event</h2>
+
+      <form id="event-form" autocomplete="off">
+        <label class="field">
+          <span class="field-label">Title</span>
+          <input id="event-title" type="text" maxlength="120" required placeholder="e.g. Football practice">
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">Date</span>
+            <input id="event-date" type="date" required>
+          </label>
+          <label class="field">
+            <span class="field-label">Time <span class="field-optional">(optional)</span></span>
+            <input id="event-time" type="time">
+          </label>
+        </div>
+
+        <fieldset class="field tag-field">
+          <legend class="field-label">Colour tag</legend>
+          <div class="tag-options" id="tag-options">
+            <button type="button" class="tag-chip tag-kids" data-tag="kids" aria-pressed="false">Kids</button>
+            <button type="button" class="tag-chip tag-work" data-tag="work" aria-pressed="false">Work</button>
+            <button type="button" class="tag-chip tag-home" data-tag="home" aria-pressed="false">Home</button>
+            <button type="button" class="tag-chip tag-projects" data-tag="projects" aria-pressed="false">Projects</button>
+          </div>
+        </fieldset>
+
+        <div class="modal-actions">
+          <button class="btn btn-danger" id="event-delete" type="button" hidden>Delete</button>
+          <span class="modal-spacer"></span>
+          <button class="btn btn-ghost" id="event-cancel" type="button">Cancel</button>
+          <button class="btn btn-primary" type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ Toast (feedback + Undo) ============ -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span class="toast-msg" id="toast-msg"></span>
+    <button class="toast-action" id="toast-action" type="button" hidden>Undo</button>
+  </div>
+
+  <!-- Scripts are at the end of <body> so the HTML above already exists when they run.
+       Load order matters: each file uses the ones above it. -->
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
