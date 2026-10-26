@@ -5,6 +5,7 @@
 const App = (() => {
   let toastTimer = null;      // hides the toast after a few seconds
   let toastActionFn = null;   // what to run if "Undo" is tapped
+  let currentDay = Dates.today(); // used to notice when the date changes
 
   /* Show a short message at the bottom of the screen.
    * Optional: pass a button label and a function to run when it is tapped.
@@ -57,6 +58,28 @@ const App = (() => {
     document.getElementById('header-date').textContent = Dates.formatHeader(Dates.today());
   }
 
+  /* ---- Rolling over to a new day ----
+   * Unfinished tasks are carried forward in today.js. This checks whether the
+   * date has changed while the app is open, and when it comes back to the
+   * foreground (phones pause timers in the background).
+   */
+  function checkForNewDay() {
+    const today = Dates.today();
+    if (today === currentDay) return; // still the same day
+
+    currentDay = today;
+    renderHeaderDate();
+
+    const carried = TodayTab.carryOver();
+    TodayTab.render();
+
+    if (carried > 0) {
+      showToast(carried === 1
+        ? '1 unfinished task carried over'
+        : carried + ' unfinished tasks carried over');
+    }
+  }
+
   function boot() {
     // Bottom tab buttons
     document.querySelectorAll('.tab').forEach((tab) => {
@@ -70,12 +93,30 @@ const App = (() => {
       if (action) action();
     });
 
+    // Start the tabs
+    TodayTab.init();
+
+    // Anything left over from an earlier day joins today's list on opening.
+    const carried = TodayTab.carryOver();
+    TodayTab.render();
+
     switchTab('today');
     renderHeaderDate();
+
+    if (carried > 0) {
+      showToast(carried === 1
+        ? '1 task carried over from before'
+        : carried + ' tasks carried over from before');
+    }
+
+    setInterval(checkForNewDay, 60 * 1000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) checkForNewDay();
+    });
   }
 
   // This script is at the end of <body>, so the page above is already loaded.
   boot();
 
-  return { showToast, hideToast, switchTab, renderHeaderDate };
+  return { showToast, hideToast, switchTab, renderHeaderDate, checkForNewDay };
 })();
