@@ -1,5 +1,8 @@
 # Dan's Day
 
+**Live app:** <https://danielrice40-ux.github.io/dans-day/> — open that on your phone and install it
+from the browser (steps below).
+
 A small, fast day planner that lives on your phone's home screen. Three tabs, no accounts,
 no sign-up, no internet required: **Today**, **Shopping**, and **Calendar**.
 
