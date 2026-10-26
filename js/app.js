@@ -95,6 +95,7 @@ const App = (() => {
 
     // Start the tabs
     TodayTab.init();
+    ShoppingTab.init();
 
     // Anything left over from an earlier day joins today's list on opening.
     const carried = TodayTab.carryOver();
