@@ -124,8 +124,9 @@ const Dates = (() => {
     const month = (date) => date.toLocaleDateString(undefined, { month: 'short' });
     const sameMonth = start.getMonth() === end.getMonth();
 
-    const left = start.getDate() + ' ' + month(start);
-    const right = sameMonth ? end.getDate() : end.getDate() + ' ' + month(end);
+    // Same month: "26 – 31 Oct 2026". Two months: "26 Oct – 1 Nov 2026".
+    const left = sameMonth ? start.getDate() : start.getDate() + ' ' + month(start);
+    const right = end.getDate() + ' ' + month(end);
     return left + ' – ' + right + ' ' + end.getFullYear();
   }
 

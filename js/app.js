@@ -72,6 +72,7 @@ const App = (() => {
 
     const carried = TodayTab.carryOver();
     TodayTab.render();
+    CalendarTab.render(); // moves the "today" highlight if the week changed
 
     if (carried > 0) {
       showToast(carried === 1
@@ -96,6 +97,7 @@ const App = (() => {
     // Start the tabs
     TodayTab.init();
     ShoppingTab.init();
+    CalendarTab.init();
 
     // Anything left over from an earlier day joins today's list on opening.
     const carried = TodayTab.carryOver();
