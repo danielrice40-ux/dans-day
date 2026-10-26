@@ -116,6 +116,23 @@ const App = (() => {
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) checkForNewDay();
     });
+
+    registerServiceWorker();
+  }
+
+  /* ---- Offline support ----
+   * The service worker (sw.js) keeps a copy of the app on the device. Browsers
+   * only allow it on https:// or localhost, so on a plain file:// page it is
+   * skipped and the app just works normally while online.
+   */
+  function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return;
+
+    navigator.serviceWorker.register('sw.js').catch((err) => {
+      // Not fatal: the app still works, it just won't load offline.
+      console.warn('Offline mode could not start.', err);
+    });
   }
 
   // This script is at the end of <body>, so the page above is already loaded.

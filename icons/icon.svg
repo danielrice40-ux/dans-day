@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Dan's Day">
+  <rect width="100" height="100" rx="22" fill="#101720"/>
+  <path d="M30 53 L44 67 L71 35" fill="none" stroke="#2ee6c5" stroke-width="15"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

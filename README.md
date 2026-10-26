@@ -92,3 +92,6 @@ The JavaScript files are loaded in the order above and each one adds a single gl
 
 - No secrets, API keys or environment variables are needed or committed.
 - Dates are handled in your device's local time zone, so "today" matches your actual day.
+- After changing any app file, bump `CACHE_VERSION` at the top of `sw.js` (e.g. `v1` → `v2`).
+  The service worker serves the cached copy first, so without a new version number phones would
+  keep seeing the old files.
